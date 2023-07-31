@@ -40,7 +40,7 @@ router.get("/" , (req, res,next) => {   // Only / not /products beacause  that w
         });
        });
 }); 
-router.post('/' , (req, res,next) => {
+router.post("/" , (req, res,next) => {
     
     const product = new Product({
           _id : new mongoose.Types.ObjectId(),
