@@ -15,6 +15,7 @@ mongoose.connect("mongodb+srv://node-shop:"+
 mongoose.Promise=global.Promise;
 
 app.use(morgan("dev"));
+app.use('/uploads',express.static('uploads'));
 app.use(bodyParser.urlencoded({extended: false})); //suppoort simple body to encoded data because extended is set to false
 app.use(bodyParser.json());
 
