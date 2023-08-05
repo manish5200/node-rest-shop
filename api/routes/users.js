@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router(); //
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+//console.log('JWT Secret Key:', process.env.JWT_KEY);
 
 const User = require("../models/user");
 
@@ -30,7 +33,50 @@ router.post("/signup", async (req, res, next) => {
     }
   });
 
-  router.delete('/:userId',(req,res,next) => {
+  router.post('/login', async (req, res, next) => {
+    try {
+      const user = await User.findOne({ email: req.body.email }).exec();
+  
+      if (!user) {
+        return res.status(401).json({
+          message: 'Authentication Failed: Enter a valid email & password',
+        });
+      }
+  
+      const isPasswordValid = await bcrypt.compare(req.body.password, user.password);
+  
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          message: 'Authentication Failed: Enter a valid email & password',
+        });
+      }
+  
+      const token = jwt.sign(
+        {
+          email: user.email,
+          userId: user._id,
+        },
+        process.env.JWT_KEY, // Use the JWT secret key from environment variable
+        {
+          expiresIn: '1h', // The token will expire in 1 hour
+        }
+      );
+  
+      console.log('Generated Token:', token); // Log the generated token for debugging purposes
+  
+      return res.status(200).json({
+        message: 'Authentication Successful',
+        token: token, // Commented out token for debugging, not sending it in the response
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        error: err,
+      });
+    }
+  });
+  
+router.delete('/:userId',(req,res,next) => {
          User.deleteOne({_id : req.params.userId}) 
         .exec()
         .then(result => {
@@ -45,5 +91,4 @@ router.post("/signup", async (req, res, next) => {
               });
         });     
   });
-
-module.exports = router; 
+module.exports = router;
